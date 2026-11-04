@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Interaktif Jaringan LAN, Kabel & Keamanan Digital</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .canvas-container {
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .cable-slot {
+            transition: all 0.2s ease;
+        }
+        .cable-slot.hovered {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white">
+                    <i data-lucide="network" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight">SimuNet Interactive</h1>
+                    <p class="text-xs text-slate-400">Simulasi Topologi, Kabel RJ45 & Keamanan Digital LAN</p>
+                </div>
+            </div>
+
+            <!-- Tab Switcher -->
+            <nav class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button id="tab-topologi-btn" onclick="switchTab('topologi')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Simulasi Topologi</span>
+                </button>
+                <button id="tab-kabel-btn" onclick="switchTab('kabel')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2">
+                    <i data-lucide="cable" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Simulasi Kabel LAN</span>
+                </button>
+                <button id="tab-keamanan-btn" onclick="switchTab('keamanan')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Keamanan & Enkripsi</span>
+                </button>
+                <button id="tab-teori-btn" onclick="switchTab('teori')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Materi & Teori</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- ================= SECTION 1: SIMULASI TOPOLOGI ================= -->
+        <section id="section-topologi" class="flex-1 flex flex-col gap-6">
+            <!-- Controls Toolbar -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pilih Topologi</label>
+                    <select id="topology-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                        <option value="star">Topologi Star (Bintang)</option>
+                        <option value="bus">Topologi Bus (Jalur)</option>
+                        <option value="ring">Topologi Ring (Cincin)</option>
+                        <option value="mesh">Topologi Mesh (Jala)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Node Pengirim & Penerima</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="sender-select" class="w-1/2 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-2 text-sm focus:outline-none">
+                            <option value="0">PC 1</option>
+                            <option value="1">PC 2</option>
+                            <option value="2">PC 3</option>
+                            <option value="3">PC 4</option>
+                            <option value="4">PC 5</option>
+                        </select>
+                        <span class="text-slate-500"><i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        <select id="receiver-select" class="w-1/2 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-2 text-sm focus:outline-none">
+                            <option value="0">PC 1</option>
+                            <option value="1">PC 2</option>
+                            <option value="2" selected>PC 3</option>
+                            <option value="3">PC 4</option>
+                            <option value="4">PC 5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Simulasi Gangguan (Node Offline)</label>
+                    <select id="disable-node-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <option value="none">Semua Node Normal (Aktif)</option>
+                        <option value="0">Matikan PC 1</option>
+                        <option value="1">Matikan PC 2</option>
+                        <option value="2">Matikan PC 3</option>
+                        <option value="3">Matikan PC 4</option>
+                        <option value="4">Matikan PC 5</option>
+                        <option value="hub">Matikan Switch/Hub (Khusus Star)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-end space-x-2">
+                    <button id="send-packet-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center justify-center space-x-2 transition-all shadow-lg shadow-blue-600/30">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>Kirim Paket</span>
+                    </button>
+                    <button id="reset-sim-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-3 rounded-lg text-sm transition-all border border-slate-700" title="Reset Simulasi">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Visualization Area & Detail Panel -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+                <!-- Interactive Canvas -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col relative overflow-hidden shadow-xl min-h-[420px] canvas-container">
+                    <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700/50 flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="canvas-status" class="text-xs font-medium text-slate-300">Siap Mengirim Data</span>
+                    </div>
+
+                    <!-- Canvas element -->
+                    <canvas id="networkCanvas" class="w-full h-full flex-1 rounded-xl cursor-pointer"></canvas>
+
+                    <div class="absolute bottom-4 right-4 text-xs text-slate-500 bg-slate-950/60 backdrop-blur px-3 py-1 rounded-md">
+                        Klik pada Node PC untuk memilih secara cepat
+                    </div>
+                </div>
+
+                <!-- Info Sidebar -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                            <h2 id="topo-title" class="text-lg font-bold text-white flex items-center gap-2">
+                                Topologi Star
+                            </h2>
+                            <span id="topo-badge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Paling Populer</span>
+                        </div>
+
+                        <p id="topo-desc" class="text-slate-400 text-sm mb-4 leading-relaxed">
+                            Setiap perangkat terhubung ke satu perangkat pusat (Switch/Hub). Jika satu kabel ke PC putus, jaringan lain tetap berfungsi normal.
+                        </p>
+
+                        <!-- Pros and Cons -->
+                        <div class="space-y-3 mb-4">
+                            <div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1 flex items-center gap-1">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Kelebihan
+                                </h4>
+                                <ul id="topo-pros" class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                                    <li>Mudah dipasang dan dikonfigurasi.</li>
+                                    <li>Kerusakan satu node tidak mengganggu yang lain.</li>
+                                    <li>Deteksi kesalahan sangat mudah.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-rose-400 mb-1 flex items-center gap-1">
+                                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Kekurangan
+                                </h4>
+                                <ul id="topo-cons" class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                                    <li>Membutuhkan banyak kabel.</li>
+                                    <li>Sangat bergantung pada perangkat pusat (Switch/Hub).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Log Terminal -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs">
+                        <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2 flex justify-between items-center">
+                            <span>Log Aktivitas Jaringan</span>
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        </div>
+                        <div id="sim-log" class="h-28 overflow-y-auto space-y-1.5 text-slate-400">
+                            <p class="text-slate-600">[System] Jaringan diinisialisasi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: SIMULASI KABEL LAN ================= -->
+        <section id="section-kabel" class="hidden flex-1 flex-col gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="wrench" class="text-blue-500"></i> Laboratorium Crimping Kabel LAN (UTP RJ-45)
+                        </h2>
+                        <p class="text-slate-400 text-sm mt-1">Susun 8 warna urutan kabel ke dalam pin RJ-45 secara benar, lalu uji konektivitasnya.</p>
+                    </div>
+
+                    <!-- Cable Type Selector -->
+                    <div class="flex items-center space-x-2 bg-slate-800 p-1 rounded-xl border border-slate-700">
+                        <button id="type-straight-btn" onclick="setCableType('straight')" class="px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white transition-all">
+                            T568B Straight-Through
+                        </button>
+                        <button id="type-cross-btn" onclick="setCableType('crossover')" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-all">
+                            Crossover (T568A vs T568B)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left: Cable Slots & Wire Inventory -->
+                    <div class="lg:col-span-7 space-y-6">
+                        
+                        <!-- Target RJ-45 Plug Connector -->
+                        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 relative">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                    <i data-lucide="plug" class="w-4 h-4 text-amber-500"></i> Pin Slot Konektor RJ-45 (Tampak Atas)
+                                </span>
+                                <span id="cable-standard-label" class="text-xs bg-slate-800 px-2.5 py-1 rounded text-blue-400 font-mono">Standar T-568B</span>
+                            </div>
+
+                            <!-- 8 Slots for Cable Wires -->
+                            <div id="rj45-slots" class="grid grid-cols-8 gap-2 mb-4">
+                                <!-- Slots generated by JS -->
+                            </div>
+
+                            <div class="flex justify-between text-[11px] text-slate-500 font-mono px-1">
+                                <span>Pin 1</span><span>Pin 2</span><span>Pin 3</span><span>Pin 4</span>
+                                <span>Pin 5</span><span>Pin 6</span><span>Pin 7</span><span>Pin 8</span>
+                            </div>
+                        </div>
+
+                        <!-- Wire Palette (Draggable/Clickable) -->
+                        <div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700/60">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Pilih / Klik Kabel UTP untuk Memasukkan ke Pin</h3>
+                                <button onclick="resetCableAssembly()" class="text-xs text-rose-400 hover:underline flex items-center gap-1">
+                                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Urutan
+                                </button>
+                            </div>
+                            
+                            <div id="wire-palette" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4">
+                            <button id="test-cable-btn" onclick="testLANAssembly()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl text-sm flex items-center justify-center space-x-2 transition-all shadow-lg shadow-emerald-600/20">
+                                <i data-lucide="zap" class="w-4 h-4"></i>
+                                <span>Uji Kabel (LAN Tester)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: LAN Cable Tester Simulation & Reference Guide -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <!-- Simulated LAN Tester Device -->
+                        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col items-center shadow-inner">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Network Cable Tester
+                            </div>
+
+                            <div class="flex gap-8 justify-center items-center w-full bg-slate-900 p-4 rounded-xl border border-slate-800">
+                                <!-- Master Unit -->
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-slate-500 font-bold mb-2">MASTER</span>
+                                    <div id="tester-master-leds" class="space-y-1.5">
+                                        <!-- 8 LEDs -->
+                                    </div>
+                                </div>
+
+                                <!-- Separator -->
+                                <div class="h-40 w-px bg-slate-800"></div>
+
+                                <!-- Remote Unit -->
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-slate-500 font-bold mb-2">REMOTE</span>
+                                    <div id="tester-remote-leds" class="space-y-1.5">
+                                        <!-- 8 LEDs -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Test Output Status -->
+                            <div id="tester-result" class="mt-4 text-center px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 text-xs w-full font-mono">
+                                Status: Menunggu pengujian kabel...
+                            </div>
+                        </div>
+
+                        <!-- Reference Color Chart -->
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                            <h4 id="guide-title" class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Panduan Urutan T-568B (Straight)</h4>
+                            <div id="guide-list" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-400 font-mono">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: KEAMANAN DIGITAL & ENKRIPSI DATA ================= -->
+        <section id="section-keamanan" class="hidden flex-1 flex-col gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                <!-- Section Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="lock" class="text-emerald-400"></i> Laboratorium Enkripsi & Keamanan Jaringan
+                        </h2>
+                        <p class="text-slate-400 text-sm mt-1">Pelajari bagaimana data disamarkan (Enkripsi) agar aman dari peretasan/Penyadapan (Eavesdropping / Man-in-the-Middle) di jaringan lokal.</p>
+                    </div>
+                </div>
+
+                <!-- Encryption Sandbox Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    <!-- Left Column: Encryption Controls & Interactive Sandbox -->
+                    <div class="lg:col-span-7 space-y-5">
+                        
+                        <!-- Mode Selector -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Metode Enkripsi:</label>
+                            <select id="enc-algorithm" onchange="updateCryptoMethod()" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-emerald-500 font-mono">
+                                <option value="symmetric">Simetris (Caesar / Secret Key)</option>
+                                <option value="asymmetric">Asimetris (RSA Public / Private Key)</option>
+                            </select>
+                        </div>
+
+                        <!-- Plaintext Input -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                                <span>1. Teks Asli (Plaintext)</span>
+                                <span class="text-[10px] text-slate-500">Pesan Rahasia Pengirim</span>
+                            </label>
+                            <textarea id="plaintext-input" rows="2" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-sm rounded-lg p-3 focus:outline-none focus:border-emerald-500" placeholder="Ketik pesan yang akan dikirim...">RAHASIA_NEGARA_LAN</textarea>
+                        </div>
+
+                        <!-- Key Config -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">2. Pengaturan Kunci (Encryption Key)</label>
+                                <button onclick="generateRandomKeys()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded border border-slate-700 flex items-center gap-1">
+                                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Acak Kunci
+                                </button>
+                            </div>
+                            
+                            <!-- Symmetric Key Option -->
+                            <div id="sym-key-container" class="space-y-1">
+                                <div class="flex justify-between text-xs text-slate-400">
+                                    <span>Kunci Pergeseran (Shift Key):</span>
+                                    <span id="shift-value-label" class="font-bold text-emerald-400">Shift +3</span>
+                                </div>
+                                <input type="range" id="shift-key-input" min="1" max="25" value="3" oninput="runEncryptionSim()" class="w-full accent-emerald-500">
+                            </div>
+
+                            <!-- Asymmetric Key Option -->
+                            <div id="asym-key-container" class="hidden space-y-2 font-mono text-xs">
+                                <div class="p-2 bg-slate-900 rounded border border-slate-800">
+                                    <span class="text-slate-500 text-[10px] block">PUBLIC KEY (Untuk Enkripsi):</span>
+                                    <span id="public-key-display" class="text-blue-400">PK-RSA#98231-PUBLIC</span>
+                                </div>
+                                <div class="p-2 bg-slate-900 rounded border border-slate-800">
+                                    <span class="text-slate-500 text-[10px] block">PRIVATE KEY (Untuk Dekripsi):</span>
+                                    <span id="private-key-display" class="text-rose-400">SK-RSA#44109-SECRET</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Controls -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="runEncryptionSim()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-emerald-600/20">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                                <span>Enkripsi Sekarang</span>
+                            </button>
+                            <button onclick="runDecryptionSim()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-blue-600/20">
+                                <i data-lucide="unlock" class="w-4 h-4"></i>
+                                <span>Dekripsi Pesan</span>
+                            </button>
+                        </div>
+
+                        <!-- Output Ciphertext & Decrypted Result -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Teks Tersandi (Ciphertext)</span>
+                                <div id="ciphertext-output" class="font-mono text-xs text-amber-400 break-all bg-slate-900 p-2.5 rounded border border-slate-800 min-h-[48px]">
+                                    -
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Hasil Dekripsi Penerima</span>
+                                <div id="decrypted-output" class="font-mono text-xs text-emerald-400 break-all bg-slate-900 p-2.5 rounded border border-slate-800 min-h-[48px]">
+                                    -
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Animated LAN MitM Attack Eavesdropping Simulation -->
+                    <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
+                        
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="eye" class="w-4 h-4 text-rose-500"></i> Penyadapan Paket LAN (MitM)
+                                </h3>
+                                <span id="mitm-status-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Data Terenkripsi</span>
+                            </div>
+
+                            <!-- Animated Transmission Graphic -->
+                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 relative space-y-6">
+                                <!-- Sender & Receiver Line -->
+                                <div class="flex justify-between items-center relative z-10">
+                                    <!-- Sender PC -->
+                                    <div class="text-center">
+                                        <div class="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500 flex items-center justify-center text-white mx-auto">
+                                            💻
+                                        </div>
+                                        <span class="text-[10px] font-bold text-slate-300 block mt-1">PC-A</span>
+                                    </div>
+
+                                    <!-- Connecting Line -->
+                                    <div class="flex-1 h-0.5 bg-slate-700 mx-3 relative">
+                                        <!-- Packet Icon -->
+                                        <div id="mitm-packet" class="w-4 h-4 bg-emerald-500 rounded-full absolute -top-1.5 left-0 flex items-center justify-center text-[8px] text-slate-900 font-bold transition-all duration-700">
+                                            🔒
+                                        </div>
+                                    </div>
+
+                                    <!-- Receiver PC -->
+                                    <div class="text-center">
+                                        <div class="w-10 h-10 rounded-full bg-emerald-600/20 border border-emerald-500 flex items-center justify-center text-white mx-auto">
+                                            🖥️
+                                        </div>
+                                        <span class="text-[10px] font-bold text-slate-300 block mt-1">PC-B</span>
+                                    </div>
+                                </div>
+
+                                <!-- Attacker / Hacker Node Intercepting -->
+                                <div class="flex flex-col items-center justify-center border-t border-slate-800 pt-4">
+                                    <div class="w-10 h-10 rounded-full bg-rose-900/30 border border-rose-500 flex items-center justify-center text-rose-400 shadow-lg shadow-rose-900/40">
+                                        🕵️‍♂️
+                                    </div>
+                                    <span class="text-[10px] font-bold text-rose-400 mt-1">Hacker (Penyadap Data)</span>
+                                    
+                                    <!-- What Hacker Sees -->
+                                    <div class="mt-2 w-full bg-slate-950 p-2.5 rounded border border-rose-900/50 text-center font-mono text-[11px]">
+                                        <span class="text-slate-500 text-[9px] block">Yang Terbaca Di Wireshark/Packet Sniffer:</span>
+                                        <span id="hacker-view-text" class="text-rose-400 font-bold break-all">*** TERENKRIPSI ***</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="triggerMitMAttackSim()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-2 px-3 rounded-lg border border-slate-700 flex items-center justify-center space-x-2 transition-all">
+                                <i data-lucide="play" class="w-3.5 h-3.5 text-blue-400"></i>
+                                <span>Jalankan Animasi Penyadapan Data</span>
+                            </button>
+                        </div>
+
+                        <!-- Theoretical Security Concepts -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i> Mengapa Enkripsi Penting di LAN?
+                            </h4>
+                            <p class="text-slate-400 text-xs leading-relaxed">
+                                Pada jaringan lokal (seperti Wi-Fi publik atau LAN kantor), peretas dapat menggunakan teknik <code class="text-amber-400">Packet Sniffing</code> untuk membaca lalu lintas data tanpa terdeteksi jika tidak dienkripsi.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: TEORI DAN MATERI ================= -->
+        <section id="section-teori" class="hidden flex-1 space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="book" class="text-blue-500"></i> Panduan Teoritis Jaringan LAN & Keamanan Digital
+                </h2>
+                <p class="text-slate-400 text-sm mb-6">Pelajari konsep dasar topologi fisik jaringan komputer, standar pembuatan kabel UTP, serta ancaman keamanan jaringan.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Topologi Star -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><i data-lucide="sun" class="w-5 h-5"></i></div>
+                            <h3 class="text-lg font-semibold text-white">Topologi Star (Bintang)</h3>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed mb-3">
+                            Topologi Star menghubungkan semua perangkat (komputer, printer, server) ke satu perangkat pusat berupa Switch atau Hub menggunakan kabel UTP.
+                        </p>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <span class="font-semibold text-blue-400">Penggunaan Terbaik:</span> Jaringan kantor modern, warnet, laboratorium sekolah karena keandalannya tinggi dan mudah dipelihara.
+                        </div>
+                    </div>
+
+                    <!-- Topologi Bus -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg"><i data-lucide="minus" class="w-5 h-5"></i></div>
+                            <h3 class="text-lg font-semibold text-white">Topologi Bus</h3>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed mb-3">
+                            Menggunakan satu kabel utama (backbone) tunggal yang menghubungkan semua node. Di kedua ujung kabel utama terdapat Terminator untuk menyerap sinyal.
+                        </p>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <span class="font-semibold text-amber-400">Penggunaan Terbaik:</span> Jaringan kecil/lama dengan biaya sangat terbatas. Menggunakan kabel Koaksial & BNC connector.
+                        </div>
+                    </div>
+
+                    <!-- Topologi Ring -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg"><i data-lucide="disc" class="w-5 h-5"></i></div>
+                            <h3 class="text-lg font-semibold text-white">Topologi Ring (Cincin)</h3>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed mb-3">
+                            Node terhubung membentuk lingkaran tertutup. Data mengalir satu arah (unidirectional) dari satu node ke node berikutnya menggunakan sistem Token (Token Ring).
+                        </p>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <span class="font-semibold text-purple-400">Karakteristik:</span> Tidak ada tabrakan data (collision), namun jika 1 node mati, seluruh jaringan dapat lumpuh.
+                        </div>
+                    </div>
+
+                    <!-- Topologi Mesh -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg"><i data-lucide="grid" class="w-5 h-5"></i></div>
+                            <h3 class="text-lg font-semibold text-white">Topologi Mesh (Jala)</h3>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed mb-3">
+                            Setiap perangkat terhubung secara langsung ke setiap perangkat lainnya (*Full Mesh*). Jumlah jalur kabel dirumuskan dengan <code class="bg-slate-900 px-1 py-0.5 rounded border border-slate-800 text-emerald-400">N(N-1)/2</code>.
+                        </p>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <span class="font-semibold text-emerald-400">Penggunaan Terbaik:</span> Jaringan kritis yang membutuhkan redundansi tinggi (misal: Server Inti Data Center).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Digital Security & Threats Grid -->
+                <div class="mt-8 bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="shield" class="text-emerald-400"></i> Pokok Penting Keamanan Jaringan Komputer
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                            <h4 class="font-bold text-blue-400 mb-1">Firewall</h4>
+                            <p class="text-slate-400 leading-relaxed">Sistem penyaring lalu lintas data yang mengontrol akses masuk dan keluar jaringan berdasarkan aturan keamanan yang ditetapkan.</p>
+                        </div>
+                        <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                            <h4 class="font-bold text-rose-400 mb-1">DDoS Attack</h4>
+                            <p class="text-slate-400 leading-relaxed">Serangan yang membanjiri server dengan lalu lintas palsu dari banyak komputer (botnet) hingga server tumbang.</p>
+                        </div>
+                        <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                            <h4 class="font-bold text-amber-400 mb-1">WPA2 / WPA3 Wi-Fi</h4>
+                            <p class="text-slate-400 leading-relaxed">Protokol enkripsi nirkabel modern untuk mengamankan jaringan Wi-Fi LAN dari pencurian kata sandi dan penyadapan udara.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cable Comparison Table -->
+                <div class="mt-6 bg-slate-950 p-5 rounded-xl border border-slate-800">
+                    <h3 class="text-base font-bold text-white mb-4">Perbedaan Kabel Straight-Through vs Crossover</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="p-3">Tipe Kabel</th>
+                                    <th class="p-3">Ujung A (Pinout)</th>
+                                    <th class="p-3">Ujung B (Pinout)</th>
+                                    <th class="p-3">Fungsi Penggunaan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
+                                <tr>
+                                    <td class="p-3 font-semibold text-blue-400">Straight-Through</td>
+                                    <td class="p-3">T-568B</td>
+                                    <td class="p-3">T-568B</td>
+                                    <td class="p-3">Menghubungkan 2 perangkat <strong>berbeda</strong> (Contoh: PC ke Switch, Router ke Switch).</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold text-emerald-400">Crossover</td>
+                                    <td class="p-3">T-568A</td>
+                                    <td class="p-3">T-568B</td>
+                                    <td class="p-3">Menghubungkan 2 perangkat <strong>sejenis</strong> secara langsung (Contoh: PC ke PC, Switch ke Switch).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 bg-slate-950">
+        SimuNet &copy; 2026 - Media Interaktif Edukasi Jaringan Komputer, Kabel UTP & Keamanan Digital
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Global State & Navigation
+        function switchTab(tabName) {
+            document.getElementById('section-topologi').classList.add('hidden');
+            document.getElementById('section-kabel').classList.add('hidden');
+            document.getElementById('section-keamanan').classList.add('hidden');
+            document.getElementById('section-teori').classList.add('hidden');
+
+            document.getElementById('tab-topologi-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2";
+            document.getElementById('tab-kabel-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2";
+            document.getElementById('tab-keamanan-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2";
+            document.getElementById('tab-teori-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center space-x-2";
+
+            if (tabName === 'topologi') {
+                document.getElementById('section-topologi').classList.remove('hidden');
+                document.getElementById('tab-topologi-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+                resizeCanvas();
+            } else if (tabName === 'kabel') {
+                document.getElementById('section-kabel').classList.remove('hidden');
+                document.getElementById('tab-kabel-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+            } else if (tabName === 'keamanan') {
+                document.getElementById('section-keamanan').classList.remove('hidden');
+                document.getElementById('tab-keamanan-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+                runEncryptionSim();
+            } else if (tabName === 'teori') {
+                document.getElementById('section-teori').classList.remove('hidden');
+                document.getElementById('tab-teori-btn').className = "px-4 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+            }
+        }
+
+        /* ==========================================================================
+           1. TOPOLOGY SIMULATION ENGINE
+           ========================================================================== */
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let currentTopology = 'star';
+        let nodes = [];
+        let hubNode = { x: 0, y: 0, disabled: false };
+        let packets = [];
+        let animationFrameId = null;
+
+        const topologyInfo = {
+            star: {
+                title: 'Topologi Star (Bintang)',
+                badge: 'Paling Populer',
+                badgeClass: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                desc: 'Setiap perangkat terhubung ke satu perangkat pusat (Switch/Hub). Jika satu kabel ke PC putus, jaringan lain tetap berfungsi normal.',
+                pros: ['Mudah dipasang dan dikonfigurasi.', 'Kerusakan satu node tidak mengganggu yang lain.', 'Deteksi kesalahan sangat mudah.'],
+                cons: ['Membutuhkan banyak kabel.', 'Sangat bergantung pada perangkat pusat (Switch/Hub).']
+            },
+            bus: {
+                title: 'Topologi Bus (Jalur)',
+                badge: 'Hemat Kabel',
+                badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                desc: 'Semua node terhubung pada satu kabel utama (backbone). Data dikirimkan ke seluruh node namun hanya diproses oleh node tujuan.',
+                pros: ['Sangat hemat biaya dan penggunaan kabel.', 'Sederhana untuk jaringan berskala sangat kecil.'],
+                cons: ['Tabrakan data (Collision) sering terjadi.', 'Jika kabel utama putus, seluruh jaringan mati total.']
+            },
+            ring: {
+                title: 'Topologi Ring (Cincin)',
+                badge: 'Aliran 1 Arah',
+                badgeClass: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                desc: 'Node terhubung membentuk lingkaran tertutup. Data mengalir berputar dalam satu arah dari satu node ke node berikutnya.',
+                pros: ['Performa stabil meski beban data berat.', 'Tidak ada risiko tabrakan data (Collision).'],
+                cons: ['Kerusakan pada 1 node menyebabkan seluruh jaringan mati.', 'Sulit untuk menambah perangkat baru.']
+            },
+            mesh: {
+                title: 'Topologi Mesh (Jala)',
+                badge: 'Redundansi Tinggi',
+                badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                desc: 'Setiap node terhubung langsung ke semua node lainnya (Full Mesh). Memiliki keandalan dan redundansi jalur paling tinggi.',
+                pros: ['Pengiriman data sangat cepat tanpa hambatan.', 'Toleransi kesalahan sangat tinggi (jika 1 kabel putus, ada banyak jalur alternatif).'],
+                cons: ['Sangat mahal dan rumit dalam pengkabelan.', 'Membutuhkan banyak port pada setiap komputer.']
+            }
+        };
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight || 420;
+            initNodes();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function initNodes() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const nodeCount = 5;
+            nodes = [];
+
+            const disabledValue = document.getElementById('disable-node-select').value;
+            hubNode.disabled = (disabledValue === 'hub');
+
+            if (currentTopology === 'star' || currentTopology === 'ring' || currentTopology === 'mesh') {
+                const centerX = w / 2;
+                const centerY = h / 2;
+                const radius = Math.min(w, h) * 0.32;
+                hubNode.x = centerX;
+                hubNode.y = centerY;
+
+                for (let i = 0; i < nodeCount; i++) {
+                    const angle = (i * 2 * Math.PI / nodeCount) - (Math.PI / 2);
+                    nodes.push({
+                        id: i,
+                        name: `PC ${i + 1}`,
+                        x: centerX + radius * Math.cos(angle),
+                        y: centerY + radius * Math.sin(angle),
+                        disabled: (disabledValue === i.toString())
+                    });
+                }
+            } else if (currentTopology === 'bus') {
+                const startX = w * 0.15;
+                const endX = w * 0.85;
+                const busY = h / 2;
+                const step = (endX - startX) / (nodeCount - 1);
+
+                for (let i = 0; i < nodeCount; i++) {
+                    const nodeX = startX + (i * step);
+                    const isTop = i % 2 === 0;
+                    nodes.push({
+                        id: i,
+                        name: `PC ${i + 1}`,
+                        x: nodeX,
+                        y: isTop ? busY - 80 : busY + 80,
+                        busTapX: nodeX,
+                        busTapY: busY,
+                        disabled: (disabledValue === i.toString())
+                    });
+                }
+            }
+        }
+
+        function addLog(message, type = 'slate') {
+            const logBox = document.getElementById('sim-log');
+            if (!logBox) return;
+            const p = document.createElement('p');
+            
+            let colorClass = 'text-slate-400';
+            if (type === 'green') colorClass = 'text-emerald-400 font-semibold';
+            if (type === 'red') colorClass = 'text-rose-400 font-semibold';
+            if (type === 'amber') colorClass = 'text-amber-400';
+            if (type === 'blue') colorClass = 'text-blue-400';
+
+            p.className = colorClass;
+            p.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logBox.appendChild(p);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function drawNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Links / Cables based on topology
+            if (currentTopology === 'star') {
+                // Central Switch/Hub
+                ctx.beginPath();
+                ctx.arc(hubNode.x, hubNode.y, 28, 0, Math.PI * 2);
+                ctx.fillStyle = hubNode.disabled ? '#ef4444' : '#3b82f6';
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 10px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(hubNode.disabled ? 'OFFLINE' : 'SWITCH', hubNode.x, hubNode.y);
+
+                // Cables to Nodes
+                nodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.moveTo(hubNode.x, hubNode.y);
+                    ctx.lineTo(node.x, node.y);
+                    ctx.strokeStyle = (hubNode.disabled || node.disabled) ? '#475569' : '#334155';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                });
+            } 
+            else if (currentTopology === 'bus') {
+                const startX = canvas.width * 0.12;
+                const endX = canvas.width * 0.88;
+                const busY = canvas.height / 2;
+
+                // Main Backbone Cable
+                ctx.beginPath();
+                ctx.moveTo(startX, busY);
+                ctx.lineTo(endX, busY);
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                // Terminators
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(startX - 8, busY - 12, 8, 24);
+                ctx.fillRect(endX, busY - 12, 8, 24);
+
+                // Drop Cables
+                nodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.moveTo(node.busTapX, node.busTapY);
+                    ctx.lineTo(node.x, node.y);
+                    ctx.strokeStyle = node.disabled ? '#ef4444' : '#64748b';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+
+                    // T-Connector
+                    ctx.beginPath();
+                    ctx.arc(node.busTapX, node.busTapY, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.fill();
+                });
+            }
+            else if (currentTopology === 'ring') {
+                for (let i = 0; i < nodes.length; i++) {
+                    const nextNode = nodes[(i + 1) % nodes.length];
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nextNode.x, nextNode.y);
+                    ctx.strokeStyle = (nodes[i].disabled || nextNode.disabled) ? '#ef4444' : '#8b5cf6';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+            else if (currentTopology === 'mesh') {
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = (nodes[i].disabled || nodes[j].disabled) ? '#334155' : '#10b981';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw PC Nodes
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 22, 0, Math.PI * 2);
+                
+                if (node.disabled) {
+                    ctx.fillStyle = '#334155';
+                    ctx.strokeStyle = '#ef4444';
+                } else {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.strokeStyle = '#3b82f6';
+                }
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Icon PC
+                ctx.fillStyle = node.disabled ? '#94a3b8' : '#ffffff';
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.disabled ? '❌' : '💻', node.x, node.y - 1);
+
+                // Draw Name
+                ctx.font = 'bold 11px Inter';
+                ctx.fillStyle = node.disabled ? '#ef4444' : '#e2e8f0';
+                ctx.fillText(node.name + (node.disabled ? ' (Off)' : ''), node.x, node.y + 34);
+            });
+
+            // Update & Draw Packets Animation
+            updateAndDrawPackets();
+
+            animationFrameId = requestAnimationFrame(drawNetwork);
+        }
+
+        function updateAndDrawPackets() {
+            for (let i = packets.length - 1; i >= 0; i--) {
+                const p = packets[i];
+                p.progress += p.speed;
+
+                if (p.progress >= 1) {
+                    p.currentHop++;
+                    if (p.currentHop < p.path.length - 1) {
+                        p.progress = 0;
+                    } else {
+                        addLog(`Paket data BERHASIL diterima oleh ${nodes[p.targetId].name}.`, 'green');
+                        document.getElementById('canvas-status').innerText = `Paket Terkirim ke ${nodes[p.targetId].name}`;
+                        packets.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                const startPoint = p.path[p.currentHop];
+                const endPoint = p.path[p.currentHop + 1];
+
+                const currentX = startPoint.x + (endPoint.x - startPoint.x) * p.progress;
+                const currentY = startPoint.y + (endPoint.y - startPoint.y) * p.progress;
+
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, 7, 0, Math.PI * 2);
+                ctx.fillStyle = '#38bdf8';
+                ctx.shadowColor = '#0284c7';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Trigger Transmission
+        document.getElementById('send-packet-btn').addEventListener('click', () => {
+            const senderId = parseInt(document.getElementById('sender-select').value);
+            const receiverId = parseInt(document.getElementById('receiver-select').value);
+
+            if (senderId === receiverId) {
+                addLog('Pengirim dan penerima tidak boleh sama!', 'amber');
+                return;
+            }
+
+            const sender = nodes[senderId];
+            const receiver = nodes[receiverId];
+
+            if (sender.disabled) {
+                addLog(`Gagal: ${sender.name} sedang offline!`, 'red');
+                return;
+            }
+
+            addLog(`Mengirim paket data dari ${sender.name} ke ${receiver.name}...`, 'blue');
+            document.getElementById('canvas-status').innerText = `Mengirim: ${sender.name} ➔ ${receiver.name}`;
+
+            let path = [];
+
+            if (currentTopology === 'star') {
+                if (hubNode.disabled) {
+                    addLog('Gagal! Perangkat Switch/Hub mati. Komunikasi terputus.', 'red');
+                    return;
+                }
+                path = [{ x: sender.x, y: sender.y }, { x: hubNode.x, y: hubNode.y }];
+
+                if (receiver.disabled) {
+                    addLog(`Paket sampai Switch, tapi ${receiver.name} offline (Drop).`, 'amber');
+                } else {
+                    path.push({ x: receiver.x, y: receiver.y });
+                }
+            } 
+            else if (currentTopology === 'bus') {
+                path = [
+                    { x: sender.x, y: sender.y },
+                    { x: sender.busTapX, y: sender.busTapY },
+                    { x: receiver.busTapX, y: receiver.busTapY }
+                ];
+                if (!receiver.disabled) {
+                    path.push({ x: receiver.x, y: receiver.y });
+                } else {
+                    addLog(`Paket melewati jalur bus, namun ${receiver.name} offline.`, 'amber');
+                }
+            } 
+            else if (currentTopology === 'ring') {
+                let curr = senderId;
+                let brokenLink = false;
+                path.push({ x: nodes[curr].x, y: nodes[curr].y });
+
+                while (curr !== receiverId) {
+                    const next = (curr + 1) % nodes.length;
+                    if (nodes[next].disabled && next !== receiverId) {
+                        brokenLink = true;
+                    }
+                    path.push({ x: nodes[next].x, y: nodes[next].y });
+                    curr = next;
+                }
+
+                if (brokenLink) {
+                    addLog('Gagal! Jalur Ring terputus karena ada node perantara yang mati.', 'red');
+                }
+            } 
+            else if (currentTopology === 'mesh') {
+                path = [
+                    { x: sender.x, y: sender.y },
+                    { x: receiver.x, y: receiver.y }
+                ];
+                if (receiver.disabled) {
+                    addLog(`Gagal! Target node (${receiver.name}) mati.`, 'red');
+                    return;
+                }
+            }
+
+            packets.push({
+                path: path,
+                currentHop: 0,
+                progress: 0,
+                speed: 0.02,
+                targetId: receiverId
+            });
+        });
+
+        document.getElementById('topology-select').addEventListener('change', (e) => {
+            currentTopology = e.target.value;
+            const info = topologyInfo[currentTopology];
+            
+            document.getElementById('topo-title').innerText = info.title;
+            document.getElementById('topo-badge').innerText = info.badge;
+            document.getElementById('topo-badge').className = `px-2.5 py-0.5 text-xs font-semibold rounded-full border ${info.badgeClass}`;
+            document.getElementById('topo-desc').innerText = info.desc;
+            
+            document.getElementById('topo-pros').innerHTML = info.pros.map(p => `<li>${p}</li>`).join('');
+            document.getElementById('topo-cons').innerHTML = info.cons.map(c => `<li>${c}</li>`).join('');
+
+            addLog(`Mengubah topologi ke ${info.title}.`, 'slate');
+            initNodes();
+        });
+
+        document.getElementById('disable-node-select').addEventListener('change', () => {
+            initNodes();
+            addLog('Status kegagalan node diperbarui.', 'amber');
+        });
+
+        document.getElementById('reset-sim-btn').addEventListener('click', () => {
+            document.getElementById('disable-node-select').value = 'none';
+            packets = [];
+            initNodes();
+            addLog('Simulasi di-reset ke kondisi awal.', 'slate');
+            document.getElementById('canvas-status').innerText = "Siap Mengirim Data";
+        });
+
+        /* ==========================================================================
+           2. LAN CABLE CRIMPING SIMULATION ENGINE
+           ========================================================================== */
+
+        const cableStandards = {
+            'T568B': [
+                { id: 'OW', name: 'Putih-Oranye', color: '#fb923c', border: '#f97316' },
+                { id: 'O',  name: 'Oranye',       color: '#ea580c', border: '#c2410c' },
+                { id: 'GW', name: 'Putih-Hijau',  color: '#4ade80', border: '#22c55e' },
+                { id: 'B',  name: 'Biru',         color: '#3b82f6', border: '#1d4ed8' },
+                { id: 'BW', name: 'Putih-Biru',   color: '#60a5fa', border: '#3b82f6' },
+                { id: 'G',  name: 'Hijau',        color: '#16a34a', border: '#15803d' },
+                { id: 'BRW',name: 'Putih-Cokelat',color: '#a16207', border: '#854d0e' },
+                { id: 'BR', name: 'Cokelat',      color: '#78350f', border: '#451a03' }
+            ],
+            'T568A': [
+                { id: 'GW', name: 'Putih-Hijau',  color: '#4ade80', border: '#22c55e' },
+                { id: 'G',  name: 'Hijau',        color: '#16a34a', border: '#15803d' },
+                { id: 'OW', name: 'Putih-Oranye', color: '#fb923c', border: '#f97316' },
+                { id: 'B',  name: 'Biru',         color: '#3b82f6', border: '#1d4ed8' },
+                { id: 'BW', name: 'Putih-Biru',   color: '#60a5fa', border: '#3b82f6' },
+                { id: 'O',  name: 'Oranye',       color: '#ea580c', border: '#c2410c' },
+                { id: 'BRW',name: 'Putih-Cokelat',color: '#a16207', border: '#854d0e' },
+                { id: 'BR', name: 'Cokelat',      color: '#78350f', border: '#451a03' }
+            ]
+        };
+
+        let currentCableAssemblyMode = 'straight'; // 'straight' or 'crossover'
+        let currentAssemblySlots = Array(8).fill(null);
+
+        function initCableStudio() {
+            renderCableSlots();
+            renderWirePalette();
+            renderLEDs();
+            updateGuideText();
+        }
+
+        function setCableType(mode) {
+            currentCableAssemblyMode = mode;
+            const btnStraight = document.getElementById('type-straight-btn');
+            const btnCross = document.getElementById('type-cross-btn');
+            const label = document.getElementById('cable-standard-label');
+
+            if (mode === 'straight') {
+                btnStraight.className = "px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white transition-all";
+                btnCross.className = "px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-all";
+                label.innerText = "Standar T-568B (Straight)";
+            } else {
+                btnCross.className = "px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white transition-all";
+                btnStraight.className = "px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-all";
+                label.innerText = "Standar T-568A vs T-568B (Crossover)";
+            }
+
+            resetCableAssembly();
+            updateGuideText();
+        }
+
+        function renderCableSlots() {
+            const container = document.getElementById('rj45-slots');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 8; i++) {
+                const wire = currentAssemblySlots[i];
+                const slotEl = document.createElement('div');
+                slotEl.className = `cable-slot h-28 border-2 border-dashed border-slate-700 rounded-xl flex flex-col justify-between items-center p-2 cursor-pointer hover:border-slate-500 transition-all ${wire ? 'bg-slate-900 border-solid' : 'bg-slate-950'}`;
+                
+                if (wire) {
+                    slotEl.style.borderColor = wire.border;
+                    slotEl.innerHTML = `
+                        <span class="text-[10px] font-bold text-slate-400">Pin ${i + 1}</span>
+                        <div class="w-4 h-14 rounded-full" style="background-color: ${wire.color}; shadow: 0 0 8px ${wire.color}"></div>
+                        <span class="text-[9px] font-mono text-center text-slate-300 leading-tight">${wire.name}</span>
+                    `;
+                    slotEl.onclick = () => removeWireFromSlot(i);
+                } else {
+                    slotEl.innerHTML = `
+                        <span class="text-[10px] font-bold text-slate-500">Pin ${i + 1}</span>
+                        <div class="w-3 h-10 border border-slate-800 rounded-full bg-slate-900/50"></div>
+                        <span class="text-[9px] text-slate-600">Kosong</span>
+                    `;
+                }
+
+                container.appendChild(slotEl);
+            }
+        }
+
+        function renderWirePalette() {
+            const container = document.getElementById('wire-palette');
+            container.innerHTML = '';
+
+            cableStandards['T568B'].forEach(wire => {
+                const isUsed = currentAssemblySlots.some(s => s && s.id === wire.id);
+                const item = document.createElement('button');
+                item.disabled = isUsed;
+                item.className = `p-2.5 rounded-xl border text-left flex items-center space-x-2 transition-all ${isUsed ? 'opacity-40 border-slate-800 bg-slate-900 cursor-not-allowed' : 'border-slate-700 bg-slate-900 hover:border-blue-500 hover:bg-slate-800'}`;
+                
+                item.innerHTML = `
+                    <div class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: ${wire.color}; border: 1px solid ${wire.border}"></div>
+                    <span class="text-xs font-medium text-slate-200">${wire.name}</span>
+                `;
+
+                item.onclick = () => addWireToNextSlot(wire);
+                container.appendChild(item);
+            });
+        }
+
+        function addWireToNextSlot(wire) {
+            const firstEmptyIndex = currentAssemblySlots.findIndex(s => s === null);
+            if (firstEmptyIndex !== -1) {
+                currentAssemblySlots[firstEmptyIndex] = wire;
+                renderCableSlots();
+                renderWirePalette();
+            }
+        }
+
+        function removeWireFromSlot(index) {
+            currentAssemblySlots[index] = null;
+            renderCableSlots();
+            renderWirePalette();
+        }
+
+        function resetCableAssembly() {
+            currentAssemblySlots = Array(8).fill(null);
+            renderCableSlots();
+            renderWirePalette();
+            document.getElementById('tester-result').innerHTML = 'Status: Menunggu pengujian kabel...';
+            document.getElementById('tester-result').className = 'mt-4 text-center px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 text-xs w-full font-mono';
+            renderLEDs();
+        }
+
+        function renderLEDs(activeMaster = -1, activeRemote = -1) {
+            const masterBox = document.getElementById('tester-master-leds');
+            const remoteBox = document.getElementById('tester-remote-leds');
+            
+            masterBox.innerHTML = '';
+            remoteBox.innerHTML = '';
+
+            for (let i = 1; i <= 8; i++) {
+                // Master
+                const mLed = document.createElement('div');
+                const mActive = (activeMaster === i);
+                mLed.className = `flex items-center space-x-2 text-xs font-mono ${mActive ? 'text-emerald-400 font-bold' : 'text-slate-600'}`;
+                mLed.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full ${mActive ? 'bg-emerald-400 shadow-md shadow-emerald-400' : 'bg-slate-800'}"></span>
+                    <span>LED ${i}</span>
+                `;
+                masterBox.appendChild(mLed);
+
+                // Remote
+                const rLed = document.createElement('div');
+                const rActive = (activeRemote === i);
+                rLed.className = `flex items-center space-x-2 text-xs font-mono ${rActive ? 'text-emerald-400 font-bold' : 'text-slate-600'}`;
+                rLed.innerHTML = `
+                    <span>LED ${i}</span>
+                    <span class="w-2.5 h-2.5 rounded-full ${rActive ? 'bg-emerald-400 shadow-md shadow-emerald-400' : 'bg-slate-800'}"></span>
+                `;
+                remoteBox.appendChild(rLed);
+            }
+        }
+
+        function testLANAssembly() {
+            if (currentAssemblySlots.some(s => s === null)) {
+                alert('Silakan susun lengkap 8 pin kabel sebelum menguji!');
+                return;
+            }
+
+            const targetStandard = currentCableAssemblyMode === 'straight' ? cableStandards['T568B'] : cableStandards['T568A'];
+            let isCorrect = true;
+
+            for (let i = 0; i < 8; i++) {
+                if (currentAssemblySlots[i].id !== targetStandard[i].id) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            // Animate Cable Tester LEDs
+            let step = 1;
+            const interval = setInterval(() => {
+                if (step <= 8) {
+                    const remoteLedVal = isCorrect ? step : (Math.floor(Math.random() * 8) + 1);
+                    renderLEDs(step, remoteLedVal);
+                    step++;
+                } else {
+                    clearInterval(interval);
+                    renderLEDs();
+
+                    const resEl = document.getElementById('tester-result');
+                    if (isCorrect) {
+                        resEl.innerHTML = `✅ KABEL VALID! Urutan ${currentCableAssemblyMode.toUpperCase()} Sempurna.`;
+                        resEl.className = 'mt-4 text-center px-4 py-2 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400 text-xs w-full font-mono font-bold';
+                    } else {
+                        resEl.innerHTML = `❌ KABEL GAGAL! Urutan warna tidak sesuai standar ${currentCableAssemblyMode.toUpperCase()}.`;
+                        resEl.className = 'mt-4 text-center px-4 py-2 rounded-lg bg-rose-950 border border-rose-800 text-rose-400 text-xs w-full font-mono font-bold';
+                    }
+                }
+            }, 250);
+        }
+
+        function updateGuideText() {
+            const title = document.getElementById('guide-title');
+            const list = document.getElementById('guide-list');
+            const std = currentCableAssemblyMode === 'straight' ? cableStandards['T568B'] : cableStandards['T568A'];
+
+            title.innerText = `Panduan Urutan ${currentCableAssemblyMode === 'straight' ? 'T-568B (Straight)' : 'T-568A (Crossover)'}`;
+            list.innerHTML = std.map((w, idx) => `
+                <div class="flex items-center space-x-1.5 py-0.5">
+                    <span class="text-slate-500 font-bold">${idx + 1}.</span>
+                    <span class="w-2 h-2 rounded-full" style="background:${w.color}"></span>
+                    <span>${w.name}</span>
+                </div>
+            `).join('');
+        }
+
+        /* ==========================================================================
+           3. DIGITAL SECURITY & ENCRYPTION SIMULATOR ENGINE
+           ========================================================================== */
+
+        let currentCryptoMethod = 'symmetric';
+
+        function updateCryptoMethod() {
+            currentCryptoMethod = document.getElementById('enc-algorithm').value;
+            if (currentCryptoMethod === 'symmetric') {
+                document.getElementById('sym-key-container').classList.remove('hidden');
+                document.getElementById('asym-key-container').classList.add('hidden');
+            } else {
+                document.getElementById('sym-key-container').classList.add('hidden');
+                document.getElementById('asym-key-container').classList.remove('hidden');
+            }
+            runEncryptionSim();
+        }
+
+        function generateRandomKeys() {
+            if (currentCryptoMethod === 'symmetric') {
+                const randomShift = Math.floor(Math.random() * 20) + 1;
+                document.getElementById('shift-key-input').value = randomShift;
+            } else {
+                const pubId = Math.floor(Math.random() * 89999) + 10000;
+                const privId = Math.floor(Math.random() * 89999) + 10000;
+                document.getElementById('public-key-display').innerText = `PK-RSA#${pubId}-PUBLIC`;
+                document.getElementById('private-key-display').innerText = `SK-RSA#${privId}-SECRET`;
+            }
+            runEncryptionSim();
+        }
+
+        function runEncryptionSim() {
+            const input = document.getElementById('plaintext-input').value || '';
+            let ciphertext = '';
+
+            if (currentCryptoMethod === 'symmetric') {
+                const shift = parseInt(document.getElementById('shift-key-input').value);
+                document.getElementById('shift-value-label').innerText = `Shift +${shift}`;
+                
+                ciphertext = input.split('').map(char => {
+                    const code = char.charCodeAt(0);
+                    return String.fromCharCode(code + shift);
+                }).join('');
+            } else {
+                ciphertext = "ENC::" + btoa(input).split('').reverse().join('');
+            }
+
+            document.getElementById('ciphertext-output').innerText = ciphertext;
+            document.getElementById('hacker-view-text').innerText = ciphertext;
+        }
+
+        function runDecryptionSim() {
+            const input = document.getElementById('plaintext-input').value || '';
+            document.getElementById('decrypted-output').innerText = input;
+        }
+
+        function triggerMitMAttackSim() {
+            const packet = document.getElementById('mitm-packet');
+            packet.style.left = '0%';
+            
+            setTimeout(() => {
+                packet.style.left = '50%';
+            }, 100);
+
+            setTimeout(() => {
+                packet.style.left = '100%';
+            }, 800);
+        }
+
+        // Window Onload Initialization
+        window.onload = () => {
+            resizeCanvas();
+            initNodes();
+            drawNetwork();
+            initCableStudio();
+            runEncryptionSim();
+        };
+    </script>
+</body>
+</html>
